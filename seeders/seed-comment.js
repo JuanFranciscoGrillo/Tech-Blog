@@ -13,7 +13,7 @@ module.exports = {
           updatedAt: new Date()
         },
         {
-          text: 'I'm leaving another comment here.',
+          text: 'Im leaving another comment here.',
           userId: 2, 
           postId: 1, 
           createdAt: new Date(),

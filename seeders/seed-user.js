@@ -2,13 +2,12 @@
 
 const bcrypt = require('bcrypt');
 
-// As a student, I'm populating the 'Users' table with example data.
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     try {
-      const hashedPassword1 = await bcrypt.hash('password1', 10); // Replace with hashed password
-      const hashedPassword2 = await bcrypt.hash('password2', 10); // Replace with hashed password
+      const hashedPassword1 = await bcrypt.hash('password1', 10); 
+      const hashedPassword2 = await bcrypt.hash('password2', 10); 
       
       await queryInterface.bulkInsert('Users', [
         {
@@ -23,7 +22,7 @@ module.exports = {
           createdAt: new Date(),
           updatedAt: new Date()
         },
-        // Add more users here
+        
       ], {});
       
       console.log('Sample users added successfully!');

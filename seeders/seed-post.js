@@ -1,7 +1,5 @@
 'use strict';
 
-// As a student, I'm populating the 'Posts' table with example data.
-
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     try {
@@ -9,18 +7,18 @@ module.exports = {
         {
           title: 'My First Post',
           content: 'This is the content of my first post.',
-          userId: 1, // Replace with the user's ID
+          userId: 1, 
           createdAt: new Date(),
           updatedAt: new Date()
         },
         {
           title: 'Another Post',
           content: 'This is another post I\'m creating.',
-          userId: 2, // Replace with another user's ID
+          userId: 2,
           createdAt: new Date(),
           updatedAt: new Date()
         },
-        // Add more posts here
+        
       ], {});
       
       console.log('Sample posts added successfully!');
