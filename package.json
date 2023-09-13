@@ -6,11 +6,16 @@
   "scripts": {
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed": "npx sequelize-cli db:seed:all" 
+    "seed": "npx sequelize-cli db:seed:all"
   },
-  "keywords": ["tech", "blog", "CMS", "developers"],
+  "keywords": [
+    "tech",
+    "blog",
+    "CMS",
+    "developers"
+  ],
   "author": "Your Name",
-  "license": "ISC", 
+  "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "connect-session-sequelize": "^7.1.7",
