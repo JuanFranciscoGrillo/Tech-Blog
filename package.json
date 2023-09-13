@@ -1,14 +1,16 @@
 {
   "name": "tech-blog",
   "version": "1.0.0",
-  "description": "Repository contains Module 14 Challenge",
-  "main": "index.js",
+  "description": "A CMS-style tech blog for developers to publish articles and opinions.",
+  "main": "server.js", // Assuming your main server file is "server.js"
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js", // Adjust this to match your entry point
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "seed": "npx sequelize-cli db:seed:all" // Seed script for running Sequelize seeders
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["tech", "blog", "CMS", "developers"],
+  "author": "Your Name",
+  "license": "ISC", // Adjust the license type if needed
   "dependencies": {
     "bcrypt": "^5.1.1",
     "connect-session-sequelize": "^7.1.7",
@@ -17,6 +19,7 @@
     "express-handlebars": "^7.1.2",
     "express-session": "^1.17.3",
     "mysql2": "^3.6.1",
-    "sequelize": "^6.33.0"
+    "sequelize": "^6.33.0",
+    "sequelize-cli": "^6.6.1"
   }
 }
