@@ -1,23 +1,23 @@
 {
-  "development": {
-    "username": "root",
-    "password": "hello",
-    "database": "Tech_Blog",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
-  },
-  "test": {
-    "username": "root",
-    "password": "hello",
-    "database": "Tech_Blog",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
-  },
-  "production": {
-    "username": "root",
-    "password": "hello",
-    "database": "Tech_Blog",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
-  }
+    "development": {
+      "username": "root",
+      "password": "hello",
+      "database": "Techblog_db",
+      "host": "127.0.0.1",
+      "dialect": "mysql"
+    },
+    "test": {
+      "username": "root",
+      "password": "hello",
+      "database": "Techblog_db",
+      "host": "127.0.0.1",
+      "dialect": "mysql"
+    },
+    "production": {
+        "username": "root",
+        "password": "hello",
+        "database": "Techblog_db",
+        "host": "127.0.0.1",
+        "dialect": "mysql"
+      }
 }

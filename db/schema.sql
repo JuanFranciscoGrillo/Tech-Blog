@@ -1,8 +1,8 @@
 -- MySQL dump 10.13  Distrib 8.0.34, for Win64 (x86_64)
 --
--- Host: localhost    Database: Tech_Blog
+-- Host: localhost    Database: Techblog_db
 -- ------------------------------------------------------
--- Server version	8.0.34
+-- Server version 8.0.34
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;

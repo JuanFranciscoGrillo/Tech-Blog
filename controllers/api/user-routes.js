@@ -1,5 +1,6 @@
+// Import necessary modules and models
 const router = require('express').Router();
-const { User } = require('../models');
+const { User } = require('../../models');
 
 // Middleware for authentication
 const isAuthenticated = (req, res, next) => {
@@ -18,7 +19,10 @@ router.post('/signup', async (req, res) => {
             return res.status(400).json({ error: 'Username and password are required' });
         }
 
+        // Create a new user
         const userData = await User.create({ username, password });
+        
+        // Save session data
         req.session.save(() => {
             req.session.userId = userData.id;
             req.session.loggedIn = true;
@@ -39,18 +43,21 @@ router.post('/signin', async (req, res) => {
             return res.status(400).json({ error: 'Username and password are required for signing in' });
         }
 
+        // Find user by username
         const userData = await User.findOne({ where: { username } });
 
         if (!userData) {
             return res.status(400).json({ message: 'No user with that username!' });
         }
 
-        const validPassword = await userData.checkPassword(password);  // This function is assumed to be in your User model
+        // Check password
+        const validPassword = await userData.checkPassword(password);
 
         if (!validPassword) {
             return res.status(400).json({ message: 'Incorrect password!' });
         }
 
+        // Save session data
         req.session.save(() => {
             req.session.userId = userData.id;
             req.session.loggedIn = true;
@@ -73,4 +80,5 @@ router.post('/signout', isAuthenticated, (req, res) => {
     }
 });
 
+// Export the router for use in the application
 module.exports = router;

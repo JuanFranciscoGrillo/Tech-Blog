@@ -1,21 +1,24 @@
 'use strict';
-const {
-  Model
-} = require('sequelize');
+const { Model } = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
   class Comment extends Model {
     static associate(models) {
       // Define associations here
+      // Comment belongs to User
       Comment.belongsTo(models.User, {
         foreignKey: 'userId',
         onDelete: 'CASCADE'
       });
+
+      // Comment belongs to Post
       Comment.belongsTo(models.Post, {
         foreignKey: 'postId',
         onDelete: 'CASCADE'
       });
     }
   }
+
   Comment.init({
     text: {
       type: DataTypes.TEXT,
@@ -33,5 +36,6 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Comment',
   });
+
   return Comment;
 };

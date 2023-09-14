@@ -1,5 +1,6 @@
+// Import necessary modules and models
 const router = require('express').Router();
-const { Post, User, Comment } = require('../models');
+const { Post, User, Comment } = require('../../models');
 
 // Middleware for authentication
 const isAuthenticated = (req, res, next) => {
@@ -104,4 +105,5 @@ router.delete('/:id', isAuthenticated, async (req, res) => {
     }
 });
 
+// Export the router for use in the application
 module.exports = router;
