@@ -1,27 +1,48 @@
 const router = require('express').Router();
 const { Comment } = require('../models');
 
+// Middleware for authentication
+const isAuthenticated = (req, res, next) => {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    res.status(401).json({ error: 'Not authenticated' });
+};
+
 // Add a Comment to a Post
-router.post('/', async (req, res) => {
+router.post('/', isAuthenticated, async (req, res) => {
     try {
-        const newComment = await Comment.create(req.body);
-        res.status(200).json(newComment);
+        const { text, userId, postId } = req.body;
+
+        if (!text || !userId || !postId) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
+
+        const newComment = await Comment.create({ text, userId, postId });
+        res.status(200).json({ data: newComment });
     } catch (err) {
-        res.status(400).json(err);
+        console.error("Error in creating comment: ", err);
+        res.status(400).json({ error: 'Error in adding comment' });
     }
 });
 
 // Delete a Comment
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', isAuthenticated, async (req, res) => {
     try {
         const deletedComment = await Comment.destroy({
             where: {
                 id: req.params.id
             }
         });
-        res.json(deletedComment);
+
+        if (!deletedComment) {
+            return res.status(404).json({ error: 'Comment not found' });
+        }
+
+        res.status(204).end(); // No content response for successful deletion
     } catch (err) {
-        res.status(500).json(err);
+        console.error("Error in deleting comment: ", err);
+        res.status(500).json({ error: 'Error in deleting comment' });
     }
 });
 

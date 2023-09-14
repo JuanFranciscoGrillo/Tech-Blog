@@ -1,6 +1,14 @@
 const router = require('express').Router();
 const { Post, User, Comment } = require('../models');
 
+// Middleware for authentication
+const isAuthenticated = (req, res, next) => {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    res.status(401).json({ error: 'Not authenticated' });
+};
+
 // Get All Posts for Homepage
 router.get('/', async (req, res) => {
     try {
@@ -8,9 +16,10 @@ router.get('/', async (req, res) => {
             include: [User],
             order: [['createdAt', 'DESC']]
         });
-        res.json(postData);
+        res.json({ data: postData });
     } catch (err) {
-        res.status(500).json(err);
+        console.error("Error fetching all posts: ", err);
+        res.status(500).json({ error: 'Error fetching all posts' });
     }
 });
 
@@ -24,47 +33,74 @@ router.get('/:id', async (req, res) => {
                 include: [User]
             }]
         });
-        res.json(postData);
+
+        if (!postData) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        res.json({ data: postData });
     } catch (err) {
-        res.status(500).json(err);
+        console.error("Error fetching specific post: ", err);
+        res.status(500).json({ error: 'Error fetching post details' });
     }
 });
 
 // Create a New Post
-router.post('/', async (req, res) => {
+router.post('/', isAuthenticated, async (req, res) => {
     try {
-        const newPost = await Post.create(req.body);
-        res.status(200).json(newPost);
+        const { title, content, userId } = req.body;
+
+        if (!title || !content || !userId) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
+
+        const newPost = await Post.create({ title, content, userId });
+        res.status(200).json({ data: newPost });
     } catch (err) {
-        res.status(400).json(err);
+        console.error("Error creating post: ", err);
+        res.status(400).json({ error: 'Error creating new post' });
     }
 });
 
 // Update an Existing Post
-router.put('/:id', async (req, res) => {
+router.put('/:id', isAuthenticated, async (req, res) => {
     try {
-        const updatedPost = await Post.update(req.body, {
-            where: {
-                id: req.params.id
-            }
+        const { title, content, userId } = req.body;
+
+        if (!title || !content || !userId) {
+            return res.status(400).json({ error: 'All fields are required for updating' });
+        }
+
+        const updatedPost = await Post.update({ title, content, userId }, {
+            where: { id: req.params.id }
         });
-        res.json(updatedPost);
+
+        if (updatedPost[0] === 0) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        res.json({ data: updatedPost });
     } catch (err) {
-        res.status(500).json(err);
+        console.error("Error updating post: ", err);
+        res.status(500).json({ error: 'Error updating post' });
     }
 });
 
 // Delete a Post
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', isAuthenticated, async (req, res) => {
     try {
         const deletedPost = await Post.destroy({
-            where: {
-                id: req.params.id
-            }
+            where: { id: req.params.id }
         });
-        res.json(deletedPost);
+
+        if (!deletedPost) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        res.status(204).end();
     } catch (err) {
-        res.status(500).json(err);
+        console.error("Error deleting post: ", err);
+        res.status(500).json({ error: 'Error deleting post' });
     }
 });
 
