@@ -1,54 +1,106 @@
-// Import necessary modules
+// Import dependencies
 const router = require('express').Router();
-const { Comment } = require('../../models');
+const { Comment, User } = require('../../models');
+const withAuth = require('../../utils/auth');
 
-// Middleware for authentication
-const isAuthenticated = (req, res, next) => {
-    if (req.isAuthenticated()) {
-        return next();
-    }
-    res.status(401).json({ error: 'Not authenticated' });
-};
-
-// Add a Comment to a Post
-router.post('/', isAuthenticated, async (req, res) => {
-    try {
-        const { text, userId, postId } = req.body;
-
-        // Check for required fields
-        if (!text || !userId || !postId) {
-            return res.status(400).json({ error: 'All fields are required' });
-        }
-
-        // Create a new comment
-        const newComment = await Comment.create({ text, userId, postId });
-        res.status(200).json({ data: newComment });
-    } catch (err) {
-        console.error("Error in creating comment: ", err);
-        res.status(400).json({ error: 'Error in adding comment' });
-    }
-});
-
-// Delete a Comment
-router.delete('/:id', isAuthenticated, async (req, res) => {
-    try {
-        // Delete a comment by ID
-        const deletedComment = await Comment.destroy({
-            where: {
-                id: req.params.id
+// Get all comments
+router.get('/', (req, res) => {
+    Comment.findAll({
+        include: [
+            {
+                model: User,
+                attributes: ['username']
             }
-        });
+        ]
+    })
+    .then(dbCommentData => res.json(dbCommentData))
+    .catch(err => {
+        console.log(err);
+        res.status(500).json(err);
+    });
+});
 
-        // Check if the comment was found and deleted
-        if (!deletedComment) {
-            return res.status(404).json({ error: 'Comment not found' });
+// Get comment by ID
+router.get('/:id', (req, res) => {
+    Comment.findOne({
+        where: { id: req.params.id },
+        include: [
+            {
+                model: User,
+                attributes: ['username']
+            }
+        ]
+    })
+    .then(dbCommentData => {
+        if (!dbCommentData) {
+            res.status(404).json({ message: 'No comment found with this id' });
+            return;
         }
+        res.json(dbCommentData);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json(err);
+    });
+});
 
-        res.status(204).end(); // No content response for successful deletion
-    } catch (err) {
-        console.error("Error in deleting comment: ", err);
-        res.status(500).json({ error: 'Error in deleting comment' });
+// Create a comment
+router.post('/', withAuth, (req, res) => {
+    // Check the session
+    if (req.session) {
+        Comment.create({
+            comment_text: req.body.comment_text,
+            user_id: req.session.user_id,
+            post_id: req.body.post_id
+        })
+        .then(dbCommentData => res.json(dbCommentData))
+        .catch(err => {
+            console.log(err);
+            res.status(400).json(err);
+        });
     }
 });
 
+// Update a comment
+router.put('/:id', withAuth, (req, res) => {
+    Comment.update(
+        {
+            comment_text: req.body.comment_text
+        },
+        {
+            where: { id: req.params.id }
+        }
+    )
+    .then(dbCommentData => {
+        if (!dbCommentData) {
+            res.status(404).json({ message: 'No comment found with this id' });
+            return;
+        }
+        res.json(dbCommentData);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json(err);
+    });
+});
+
+// Delete a comment
+router.delete('/:id', withAuth, (req, res) => {
+    Comment.destroy({
+        where: { id: req.params.id }
+    })
+    .then(dbCommentData => {
+        if (!dbCommentData) {
+            res.status(404).json({ message: 'No comment found with this id' });
+            return;
+        }
+        res.json(dbCommentData);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json(err);
+    });
+});
+
+// Export the router
 module.exports = router;

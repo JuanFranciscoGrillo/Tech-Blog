@@ -1,84 +1,113 @@
-// Import necessary modules and models
+// Import dependencies
 const router = require('express').Router();
-const { User } = require('../../models');
+const { User, Post, Comment } = require('../../models');
 
-// Middleware for authentication
-const isAuthenticated = (req, res, next) => {
-    if (req.isAuthenticated()) {
-        return next();
-    }
-    res.status(401).json({ error: 'Not authenticated' });
-};
-
-// Sign Up
-router.post('/signup', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-
-        if (!username || !password) {
-            return res.status(400).json({ error: 'Username and password are required' });
-        }
-
-        // Create a new user
-        const userData = await User.create({ username, password });
-        
-        // Save session data
-        req.session.save(() => {
-            req.session.userId = userData.id;
-            req.session.loggedIn = true;
-            res.status(200).json({ data: userData });
-        });
-    } catch (err) {
-        console.error("Error signing up: ", err);
-        res.status(500).json({ error: 'Error during sign-up' });
-    }
+// Get all users
+router.get('/', (req, res) => {
+    User.findAll({
+        attributes: { exclude: ['password'] }
+    })
+    .then(dbUserData => res.json(dbUserData))
+    .catch(err => {
+        console.log(err);
+        res.status(500).json(err);
+    });
 });
 
-// Sign In
-router.post('/signin', async (req, res) => {
-    try {
-        const { username, password } = req.body;
+// Get specific user
+router.get('/:id', (req, res) => {
+    User.findOne({
+        attributes: { exclude: ['password'] },
+        where: { id: req.params.id },
+        include: [
+            {
+                model: Post,
+                attributes: ['id', 'title', 'content', 'created_at']
+            },
+            {
+                model: Comment,
+                attributes: ['id', 'comment_text', 'created_at'],
+                include: {
+                    model: Post,
+                    attributes: ['title']
+                }
+            }
+        ]
+    })
+    .then(dbUserData => {
+        if (!dbUserData) {
+            res.status(404).json({ message: 'No user found with this id' });
+            return;
+        }
+        res.json(dbUserData);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json(err);
+    });
+});
 
-        if (!username || !password) {
-            return res.status(400).json({ error: 'Username and password are required for signing in' });
+// Create a user
+router.post('/', (req, res) => {
+    User.create({
+        username: req.body.username,
+        password: req.body.password
+    })
+    .then(dbUserData => {
+        req.session.save(() => {
+            req.session.user_id = dbUserData.id;
+            req.session.username = dbUserData.username;
+            req.session.loggedIn = true;
+
+            res.json(dbUserData);
+        });
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json(err);
+    });
+});
+
+// Login route
+router.post('/login', (req, res) => {
+    User.findOne({
+        where: { username: req.body.username }
+    })
+    .then(dbUserData => {
+        if (!dbUserData) {
+            return res.status(401).json({ message: 'No user with that username!' });
         }
 
-        // Find user by username
-        const userData = await User.findOne({ where: { username } });
-
-        if (!userData) {
-            return res.status(400).json({ message: 'No user with that username!' });
-        }
-
-        // Check password
-        const validPassword = await userData.checkPassword(password);
+        const validPassword = dbUserData.checkPassword(req.body.password);
 
         if (!validPassword) {
-            return res.status(400).json({ message: 'Incorrect password!' });
+            return res.status(401).json({ message: 'Incorrect password!' });
         }
 
-        // Save session data
         req.session.save(() => {
-            req.session.userId = userData.id;
+            req.session.user_id = dbUserData.id;
+            req.session.username = dbUserData.username;
             req.session.loggedIn = true;
-            res.json({ user: userData, message: 'You are now logged in!' });
+
+            res.json({ user: dbUserData, message: 'You are now logged in!' });
         });
-    } catch (err) {
-        console.error("Error signing in: ", err);
-        res.status(500).json({ error: 'Error during sign-in' });
-    }
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json(err);
+    });
 });
 
-// Sign Out
-router.post('/signout', isAuthenticated, (req, res) => {
+// Logout route
+router.post('/logout', (req, res) => {
     if (req.session.loggedIn) {
         req.session.destroy(() => {
             res.status(204).end();
         });
     } else {
-        res.status(404).json({ error: 'Not logged in' });
+        res.status(404).end();
     }
 });
 
-// Export the router for use in the application
+// Export the router
 module.exports = router;
